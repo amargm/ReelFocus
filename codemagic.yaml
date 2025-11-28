@@ -1,1 +1,69 @@
+# Codemagic CI/CD configuration file
+# This workflow is designed for a React Native Android release build.
 
+workflows:
+  android-release:
+    name: Android Release Build (APK)
+    max_build_duration: 60
+    
+    # 1. Environment Setup
+    environment:
+      # Use an environment with necessary tools for Android and Node.js
+      flutter: latest
+      xcode: latest
+      # Specify Node.js version, common for React Native projects
+      node: 18
+      # Set up path for Android SDK tools
+      android_tools: latest
+      
+      # Environment variables for build process (optional but good practice)
+      vars:
+        PACKAGE_NAME: "com.reelFocus" # Replace with your actual package name
+        # React Native uses `yarn` by default, but we'll try `npm` or `yarn` based on the lock file
+        NODE_INSTALLER: "npm" 
+        
+    # 2. Dependencies Caching (speeds up subsequent builds)
+    caching:
+      # Cache for node modules
+      - ./.npm
+      - ./node_modules
+      # Cache for Android build dependencies
+      - $HOME/.gradle/caches
+      - $HOME/.gradle/wrapper
+
+    # 3. Build Steps
+    scripts:
+      - name: Install dependencies
+        # Use a check to install dependencies based on your lock file (package-lock.json or yarn.lock)
+        script: |
+          if [ -f "yarn.lock" ]; then
+            echo "Using yarn to install dependencies..."
+            yarn install --frozen-lockfile
+            NODE_INSTALLER="yarn"
+          else
+            echo "Using npm to install dependencies..."
+            npm install
+            NODE_INSTALLER="npm"
+          fi
+
+      - name: Install Pods (Optional for Android, but safe to include for setup)
+        # This step is mainly for iOS, but ensures a clean workspace if it were a universal build
+        script: |
+          echo "Skipping iOS Pods installation for Android-only build."
+
+      - name: Build Android Release APK
+        # Change directory to the Android project folder
+        script: |
+          cd android
+          
+          # Run the release build task using Gradle
+          # Assumes the keystore signing config is set up locally or via Codemagic secrets for a real release
+          ./gradlew assembleRelease
+          
+    # 4. Artifact Publishing
+    artifacts:
+      # Specify the path where the resulting APK file will be found after a successful build
+      - build/app/outputs/apk/release/app-release.apk
+      - build/app/outputs/bundle/**/*.aab
+
+   
