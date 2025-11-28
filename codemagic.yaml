@@ -13,8 +13,7 @@ workflows:
       xcode: latest
       # Specify Node.js version, common for React Native projects
       node: 18
-      # Set up path for Android SDK tools
-      android_tools: latest
+     
       
       # Environment variables for build process (optional but good practice)
       vars:
@@ -22,14 +21,7 @@ workflows:
         # React Native uses `yarn` by default, but we'll try `npm` or `yarn` based on the lock file
         NODE_INSTALLER: "npm" 
         
-    # 2. Dependencies Caching (speeds up subsequent builds)
-    caching:
-      # Cache for node modules
-      - ./.npm
-      - ./node_modules
-      # Cache for Android build dependencies
-      - $HOME/.gradle/caches
-      - $HOME/.gradle/wrapper
+   
 
     # 3. Build Steps
     scripts:
